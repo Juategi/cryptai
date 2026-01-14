@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.cryptai"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "28.0.12433566"
 
     compileOptions {

@@ -17,13 +17,14 @@ class FllamaLLMService implements LLMService {
   double? _contextId;
   StreamSubscription? _tokenSubscription;
 
-  static const String _modelAssetPath = 'assets/phi3.gguf';
-  static const String _modelFileName = 'phi3.gguf';
+  static const String _modelAssetPath = 'assets/llama.gguf';
+  static const String _modelFileName = 'llama.gguf';
 
   final LLMModelInfo _phi3Model = const LLMModelInfo(
-    id: 'phi3',
-    name: 'Phi-3 Mini',
-    description: 'Microsoft Phi-3 Mini - Efficient local LLM',
+    id: 'llama',
+    name: 'Tiny Llama Phi-3 Mini',
+    description:
+        'A compact Phi-3 based LLaMA model optimized for local inference.',
     parameterCount: 4,
     requiredMemoryMB: 2500,
     isDownloaded: true,
@@ -163,13 +164,16 @@ class FllamaLLMService implements LLMService {
       final roleContents = <RoleContent>[];
 
       // Add system prompt
-      final sysPrompt = systemPrompt ??
+      final sysPrompt =
+          systemPrompt ??
           'You are a helpful, private AI assistant running offline on the user\'s device. Be concise and helpful.';
       roleContents.add(RoleContent(role: 'system', content: sysPrompt));
 
       // Add conversation messages
       for (final message in messages) {
-        roleContents.add(RoleContent(role: message.role, content: message.content));
+        roleContents.add(
+          RoleContent(role: message.role, content: message.content),
+        );
       }
 
       // Get formatted prompt using model's chat template

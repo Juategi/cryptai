@@ -31,6 +31,6 @@ final llmReadyProvider = Provider<bool>((ref) {
 Future<LLMService> createLLMService() async {
   final service = FllamaLLMService();
   await service.initialize();
-  await service.loadModel('phi3');
+  await service.loadModel('llama');
   return service;
 }

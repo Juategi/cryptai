@@ -44,4 +44,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/assets/phi3.gguf
+/assets/*.gguf
