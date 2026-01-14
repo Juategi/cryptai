@@ -8,10 +8,7 @@ import 'providers/settings_provider.dart';
 class CryptAIApp extends ConsumerWidget {
   final bool isInitialized;
 
-  const CryptAIApp({
-    super.key,
-    required this.isInitialized,
-  });
+  const CryptAIApp({super.key, required this.isInitialized});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

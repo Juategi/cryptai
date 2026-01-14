@@ -91,11 +91,13 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 48),
-              // Logo/Icon
-              Icon(
-                Icons.lock_outline_rounded,
-                size: 80,
-                color: AppColors.primary,
+              // Logo
+              Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 120,
+                  height: 120,
+                ),
               ),
               const SizedBox(height: 24),
               // Title
@@ -103,6 +105,7 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
                 'Welcome to CryptAI',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.blueDark,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -110,7 +113,7 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
               Text(
                 'Your private, offline AI assistant',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: AppColors.blueDeep,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -280,12 +283,12 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.turquoise.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: AppColors.primary,
+            color: AppColors.turquoise,
             size: 24,
           ),
         ),
@@ -298,12 +301,13 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: AppColors.blueDark,
                 ),
               ),
               Text(
                 description,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: AppColors.blueDeep,
                 ),
               ),
             ],

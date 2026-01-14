@@ -1,46 +1,68 @@
 import 'package:flutter/material.dart';
 
-/// Application color palette
+/// CryptAI color palette
 class AppColors {
   AppColors._();
 
-  // Primary colors
-  static const Color primary = Color(0xFF6366F1);
-  static const Color primaryLight = Color(0xFF818CF8);
-  static const Color primaryDark = Color(0xFF4F46E5);
+  // Base
+  static const Color white = Color(0xFFFDFDFD);
 
-  // Secondary colors
-  static const Color secondary = Color(0xFF10B981);
-  static const Color secondaryLight = Color(0xFF34D399);
-  static const Color secondaryDark = Color(0xFF059669);
+  // Brand / Primary
+  static const Color blueDark = Color(0xFF013251); // Primary strong
+  static const Color blueDeep = Color(0xFF05647F); // Buttons / headers
+  static const Color turquoise = Color(0xFF0A8DA8); // Accent / CTA
+  static const Color blueLight = Color(0xFF27A7D7); // Highlights
+  static const Color blueSoft = Color(0xFF9CC6D2); // Borders / backgrounds
 
-  // Neutral colors
-  static const Color background = Color(0xFFF8FAFC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFF1F5F9);
+  // Aliases for easier usage
+  static const Color primary = blueDark;
+  static const Color primaryLight = blueLight;
+  static const Color primaryDark = blueDark;
+  static const Color secondary = turquoise;
+  static const Color secondaryLight = blueLight;
+  static const Color accent = turquoise;
+
+  // Surface colors
+  static const Color background = white;
+  static const Color surface = white;
+  static const Color surfaceVariant = Color(0xFFF0F7FA);
 
   // Dark theme colors
-  static const Color backgroundDark = Color(0xFF0F172A);
-  static const Color surfaceDark = Color(0xFF1E293B);
-  static const Color surfaceVariantDark = Color(0xFF334155);
+  static const Color backgroundDark = blueDark;
+  static const Color surfaceDark = blueDeep;
+  static const Color surfaceVariantDark = Color(0xFF074A61);
 
   // Text colors
-  static const Color textPrimary = Color(0xFF1E293B);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textPrimaryDark = Color(0xFFF1F5F9);
-  static const Color textSecondaryDark = Color(0xFF94A3B8);
+  static const Color textPrimary = blueDark;
+  static const Color textSecondary = blueDeep;
+  static const Color textOnDark = white;
+  static const Color textPrimaryDark = white;
+  static const Color textSecondaryDark = blueSoft;
 
   // Chat bubble colors
-  static const Color userBubble = Color(0xFF6366F1);
-  static const Color userBubbleText = Color(0xFFFFFFFF);
-  static const Color assistantBubble = Color(0xFFF1F5F9);
-  static const Color assistantBubbleText = Color(0xFF1E293B);
-  static const Color assistantBubbleDark = Color(0xFF334155);
-  static const Color assistantBubbleTextDark = Color(0xFFF1F5F9);
+  static const Color userBubble = turquoise;
+  static const Color userBubbleText = white;
+  static const Color assistantBubble = Color(0xFFE8F4F8);
+  static const Color assistantBubbleText = blueDark;
+  static const Color assistantBubbleDark = blueDeep;
+  static const Color assistantBubbleTextDark = white;
 
   // Status colors
-  static const Color success = Color(0xFF10B981);
+  static const Color success = turquoise;
+  static const Color info = blueLight;
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF3B82F6);
+  static const Color disabled = blueSoft;
+
+  // Logo gradient
+  static const LinearGradient logoGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      blueDark,
+      blueDeep,
+      turquoise,
+      blueLight,
+    ],
+  );
 }
