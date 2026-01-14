@@ -7,8 +7,8 @@ plugins {
 
 android {
     namespace = "com.example.cryptai"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion = "28.0.12433566"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.cryptai"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

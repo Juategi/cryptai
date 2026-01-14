@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../main.dart';
 import '../../../services/encryption/encryption_service.dart';
 import '../../../services/storage/secure_storage_service.dart';
 
@@ -60,8 +60,8 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
       await secureStorage.setAppInitialized();
 
       if (mounted) {
-        // Navigate to home and restart app to reinitialize with database
-        context.go('/');
+        // Restart app to reinitialize with database
+        RestartWidget.restartApp(context);
       }
     } catch (e) {
       if (mounted) {
