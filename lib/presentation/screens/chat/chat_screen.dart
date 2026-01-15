@@ -24,11 +24,30 @@ class ChatScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
+  ConversationRepository? _conversationRepo;
+
   @override
   void initState() {
     super.initState();
     // Load conversation if not already active
     _loadConversation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache repo reference before dispose
+    _conversationRepo = ref.read(conversationRepositoryProvider);
+  }
+
+  @override
+  void dispose() {
+    // Clean up empty conversation when leaving this screen
+    final conversation = ref.read(activeConversationProvider);
+    if (conversation != null && conversation.messageCount == 0) {
+      _conversationRepo?.deleteConversation(conversation.id);
+    }
+    super.dispose();
   }
 
   Future<void> _loadConversation() async {

@@ -8,32 +8,18 @@ import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Screen showing list of all conversations
-class ChatListScreen extends ConsumerStatefulWidget {
+class ChatListScreen extends ConsumerWidget {
   const ChatListScreen({super.key});
 
   @override
-  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
-}
-
-class _ChatListScreenState extends ConsumerState<ChatListScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Clean up empty conversations when returning to this screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(conversationRepositoryProvider).deleteEmptyConversations();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final conversationsAsync = ref.watch(conversationsProvider);
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Center(
                   child: Image.asset('assets/logo.png', width: 80, height: 80),
@@ -56,7 +42,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         message:
                             'Start a new chat to begin your private AI experience',
                         actionLabel: 'New Chat',
-                        onAction: () => _createNewChat(context),
+                        onAction: () => _createNewChat(context, ref),
                       );
                     }
 
@@ -74,7 +60,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             context.push('/chat/${conversation.id}');
                           },
                           onDelete: () =>
-                              _deleteConversation(context, conversation),
+                              _deleteConversation(context, ref, conversation),
                         );
                       },
                     );
@@ -107,13 +93,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _createNewChat(context),
+        onPressed: () => _createNewChat(context, ref),
         child: const Icon(Icons.add_rounded),
       ),
     );
   }
 
-  Future<void> _createNewChat(BuildContext context) async {
+  Future<void> _createNewChat(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(conversationRepositoryProvider);
     final conversation = await repo.createConversation(title: 'New Chat');
     ref.read(activeConversationProvider.notifier).setConversation(conversation);
@@ -124,6 +110,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   Future<void> _deleteConversation(
     BuildContext context,
+    WidgetRef ref,
     ConversationModel conversation,
   ) async {
     final confirmed = await showDialog<bool>(
