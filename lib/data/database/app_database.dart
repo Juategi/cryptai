@@ -93,6 +93,49 @@ class AppDatabase extends _$AppDatabase {
     await (delete(conversations)..where((t) => t.id.equals(id))).go();
   }
 
+  /// Search conversations by title or message content
+  Future<List<Conversation>> searchConversations(String query) async {
+    final lowerQuery = '%${query.toLowerCase()}%';
+
+    // Find conversations matching title
+    final titleMatches = await (select(conversations)
+          ..where((t) => t.title.lower().like(lowerQuery))
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    // Find conversation IDs with matching message content
+    final messageMatches = await (selectOnly(messages, distinct: true)
+          ..addColumns([messages.conversationId])
+          ..where(messages.content.lower().like(lowerQuery)))
+        .get();
+
+    final messageConversationIds =
+        messageMatches.map((row) => row.read(messages.conversationId)!).toSet();
+
+    // Get conversations from message matches that aren't in title matches
+    final titleMatchIds = titleMatches.map((c) => c.id).toSet();
+    final additionalIds =
+        messageConversationIds.difference(titleMatchIds).toList();
+
+    if (additionalIds.isEmpty) {
+      return titleMatches;
+    }
+
+    final additionalConversations = await (select(conversations)
+          ..where((t) => t.id.isIn(additionalIds))
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc)
+          ]))
+        .get();
+
+    // Combine and sort by updatedAt
+    final allMatches = [...titleMatches, ...additionalConversations];
+    allMatches.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return allMatches;
+  }
+
   // ============ Message Operations ============
 
   /// Get all messages for a conversation

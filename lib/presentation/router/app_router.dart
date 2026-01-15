@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../screens/onboarding/welcome_screen.dart';
 import '../screens/onboarding/encryption_setup_screen.dart';
-import '../screens/chat_list/chat_list_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/settings/settings_screen.dart';
 
@@ -25,13 +24,13 @@ class AppRouter {
         builder: (context, state) => const EncryptionSetupScreen(),
       ),
       GoRoute(
-        path: '/chats',
-        name: 'chats',
-        builder: (context, state) => const ChatListScreen(),
+        path: '/chat',
+        name: 'chat',
+        builder: (context, state) => const ChatScreen(),
       ),
       GoRoute(
         path: '/chat/:id',
-        name: 'chat',
+        name: 'chat_with_id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return ChatScreen(conversationId: id);

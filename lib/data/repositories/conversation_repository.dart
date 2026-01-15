@@ -108,6 +108,15 @@ class ConversationRepository {
     }
   }
 
+  /// Search conversations by title or message content
+  Future<List<ConversationModel>> searchConversations(String query) async {
+    if (query.trim().isEmpty) {
+      return getAllConversations();
+    }
+    final results = await _db.searchConversations(query);
+    return results.map(_mapToModel).toList();
+  }
+
   ConversationModel _mapToModel(Conversation data) {
     return ConversationModel(
       id: data.id,

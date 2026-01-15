@@ -47,6 +47,19 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () =>
                 _showTemperatureDialog(context, ref, settings.temperature),
           ),
+          ListTile(
+            leading: const Icon(Icons.psychology_outlined),
+            title: const Text('Default System Prompt'),
+            subtitle: Text(
+              settings.customSystemPrompt?.isNotEmpty == true
+                  ? settings.customSystemPrompt!
+                  : 'Not set',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _showSystemPromptDialog(context, ref, settings.customSystemPrompt),
+          ),
           const Divider(),
 
           // Appearance Section
@@ -291,6 +304,61 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _showSystemPromptDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String? currentPrompt,
+  ) async {
+    final controller = TextEditingController(text: currentPrompt ?? '');
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Default System Prompt'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Set default instructions for how the AI should behave in new conversations.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'System Prompt',
+                hintText: 'e.g., You are a helpful assistant...',
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          if (currentPrompt != null && currentPrompt.isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.pop(context, ''),
+              child: const Text('Clear'),
+            ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      ref.read(settingsProvider.notifier).updateCustomSystemPrompt(
+            result.isEmpty ? null : result,
+          );
+    }
   }
 
   Future<void> _showThemeDialog(

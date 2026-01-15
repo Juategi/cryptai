@@ -94,7 +94,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (widget.needsSetup) {
       context.go('/setup');
     } else {
-      context.go('/chats');
+      context.go('/chat');
     }
   }
 
