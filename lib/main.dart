@@ -95,13 +95,12 @@ class _CryptAILoaderState extends State<CryptAILoader> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
+          backgroundColor: Colors.white,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset('assets/logo.png', width: 120, height: 120),
-                const SizedBox(height: 24),
-                const CircularProgressIndicator(),
               ],
             ),
           ),

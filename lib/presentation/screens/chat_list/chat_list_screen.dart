@@ -20,12 +20,17 @@ class ChatListScreen extends ConsumerWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(
-              'assets/logo.png',
-              width: 32,
-              height: 32,
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(2),
+              child: Image.asset('assets/icon.png'),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             const Text('CryptAI'),
           ],
         ),
@@ -71,11 +76,7 @@ class ChatListScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: AppColors.error,
-              ),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text('Error: $error'),
               const SizedBox(height: 16),
@@ -96,9 +97,7 @@ class ChatListScreen extends ConsumerWidget {
 
   Future<void> _createNewChat(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(conversationRepositoryProvider);
-    final conversation = await repo.createConversation(
-      title: 'New Chat',
-    );
+    final conversation = await repo.createConversation(title: 'New Chat');
     ref.read(activeConversationProvider.notifier).setConversation(conversation);
     if (context.mounted) {
       context.push('/chat/${conversation.id}');
@@ -124,9 +123,7 @@ class ChatListScreen extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Delete'),
           ),
         ],
@@ -163,10 +160,7 @@ class _ConversationTile extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         color: AppColors.error,
-        child: const Icon(
-          Icons.delete_outline_rounded,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
       ),
       confirmDismiss: (_) async {
         onDelete();
@@ -174,13 +168,7 @@ class _ConversationTile extends StatelessWidget {
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: AppColors.turquoise.withValues(alpha: 0.1),
-          child: const Icon(
-            Icons.chat_bubble_outline_rounded,
-            color: AppColors.turquoise,
-          ),
-        ),
+
         title: Text(
           conversation.title,
           maxLines: 1,
@@ -213,22 +201,6 @@ class _ConversationTile extends StatelessWidget {
                 color: theme.colorScheme.outline,
               ),
             ),
-            if (conversation.messageCount > 0) ...[
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.blueSoft.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${conversation.messageCount}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppColors.blueDeep,
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
         onTap: onTap,
