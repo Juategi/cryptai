@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:pointycastle/export.dart';
 import '../../core/constants/app_constants.dart';
 
 /// Service for handling encryption and decryption operations
@@ -15,20 +14,6 @@ class EncryptionService {
       (_) => random.nextInt(256),
     );
     return base64Url.encode(bytes);
-  }
-
-  /// Derive a key from a user passphrase using PBKDF2
-  String deriveKeyFromPassphrase(String passphrase, String salt) {
-    final saltBytes = base64Url.decode(salt);
-    final pbkdf2 = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
-    pbkdf2.init(Pbkdf2Parameters(
-      Uint8List.fromList(saltBytes),
-      AppConstants.pbkdf2Iterations,
-      AppConstants.encryptionKeyLength,
-    ));
-
-    final key = pbkdf2.process(Uint8List.fromList(utf8.encode(passphrase)));
-    return base64Url.encode(key);
   }
 
   /// Encrypt plaintext data using AES-256
@@ -61,16 +46,6 @@ class EncryptionService {
     );
 
     return encrypter.decrypt(encrypted, iv: iv);
-  }
-
-  /// Generate a secure random salt
-  String generateSalt() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(
-      AppConstants.saltLength,
-      (_) => random.nextInt(256),
-    );
-    return base64Url.encode(bytes);
   }
 
   /// Validate that a key is properly formatted

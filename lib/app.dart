@@ -12,15 +12,19 @@ class CryptAIApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
     final router = AppRouter(isInitialized: isInitialized).router;
+
+    // Only access settings when database is initialized
+    final themeMode = isInitialized
+        ? ref.watch(settingsProvider).themeMode
+        : ThemeMode.system;
 
     return MaterialApp.router(
       title: 'CryptAI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: settings.themeMode,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

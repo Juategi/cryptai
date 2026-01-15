@@ -34,19 +34,6 @@ class SecureStorageService {
     return key != null && key.isNotEmpty;
   }
 
-  /// Store passphrase salt for key derivation
-  Future<void> storePassphraseSalt(String salt) async {
-    await _storage.write(
-      key: StorageKeys.passphraseSalt,
-      value: salt,
-    );
-  }
-
-  /// Get passphrase salt
-  Future<String?> getPassphraseSalt() async {
-    return await _storage.read(key: StorageKeys.passphraseSalt);
-  }
-
   /// Mark app as initialized
   Future<void> setAppInitialized() async {
     await _storage.write(

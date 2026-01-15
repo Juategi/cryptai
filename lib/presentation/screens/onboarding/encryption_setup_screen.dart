@@ -15,46 +15,17 @@ class EncryptionSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _passphraseController = TextEditingController();
-  final _confirmController = TextEditingController();
-  bool _usePassphrase = false;
   bool _isLoading = false;
-  bool _obscurePassphrase = true;
-  bool _obscureConfirm = true;
-
-  @override
-  void dispose() {
-    _passphraseController.dispose();
-    _confirmController.dispose();
-    super.dispose();
-  }
 
   Future<void> _setupEncryption() async {
-    if (_usePassphrase && !_formKey.currentState!.validate()) {
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
       final encryptionService = EncryptionService();
       final secureStorage = SecureStorageService();
 
-      String databaseKey;
-
-      if (_usePassphrase && _passphraseController.text.isNotEmpty) {
-        // Derive key from passphrase
-        final salt = encryptionService.generateSalt();
-        databaseKey = encryptionService.deriveKeyFromPassphrase(
-          _passphraseController.text,
-          salt,
-        );
-        await secureStorage.storePassphraseSalt(salt);
-      } else {
-        // Generate random key (device-protected only)
-        databaseKey = encryptionService.generateKey();
-      }
+      // Generate random key (device-protected)
+      final databaseKey = encryptionService.generateKey();
 
       await secureStorage.storeDatabaseKey(databaseKey);
       await secureStorage.setAppInitialized();
@@ -135,108 +106,6 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
                 icon: Icons.visibility_off_rounded,
                 title: 'Complete Privacy',
                 description: 'Your data never leaves your device.',
-              ),
-              const SizedBox(height: 32),
-              // Passphrase option
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Switch(
-                            value: _usePassphrase,
-                            onChanged: (value) {
-                              setState(() => _usePassphrase = value);
-                            },
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Use custom passphrase',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_usePassphrase) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Your passphrase adds extra protection. You\'ll need it if you reinstall the app.',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.outline,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                controller: _passphraseController,
-                                obscureText: _obscurePassphrase,
-                                decoration: InputDecoration(
-                                  labelText: 'Passphrase',
-                                  prefixIcon: const Icon(Icons.key_rounded),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscurePassphrase
-                                        ? Icons.visibility_rounded
-                                        : Icons.visibility_off_rounded),
-                                    onPressed: () {
-                                      setState(() => _obscurePassphrase =
-                                          !_obscurePassphrase);
-                                    },
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.length < 8) {
-                                    return 'Passphrase must be at least 8 characters';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _confirmController,
-                                obscureText: _obscureConfirm,
-                                decoration: InputDecoration(
-                                  labelText: 'Confirm Passphrase',
-                                  prefixIcon:
-                                      const Icon(Icons.key_off_rounded),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(_obscureConfirm
-                                        ? Icons.visibility_rounded
-                                        : Icons.visibility_off_rounded),
-                                    onPressed: () {
-                                      setState(() =>
-                                          _obscureConfirm = !_obscureConfirm);
-                                    },
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value != _passphraseController.text) {
-                                    return 'Passphrases do not match';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ] else ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Encryption will use device-protected storage. Recommended for most users.',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.outline,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
               ),
               const SizedBox(height: 32),
               // Continue button

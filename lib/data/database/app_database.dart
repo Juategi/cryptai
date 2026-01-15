@@ -34,14 +34,13 @@ class AppDatabase extends _$AppDatabase {
   static LazyDatabase createEncrypted(String encryptionKey) {
     return LazyDatabase(() async {
       // Setup SQLCipher for Android
-      if (Platform.isAndroid) {
-        open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
-      }
+      await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
+      open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
 
       final dbFolder = await getApplicationDocumentsDirectory();
       final file = File(p.join(dbFolder.path, AppConstants.databaseName));
 
-      return NativeDatabase.createInBackground(
+      return NativeDatabase(
         file,
         setup: (database) {
           // Set encryption key using PRAGMA

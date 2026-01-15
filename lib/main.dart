@@ -37,10 +37,7 @@ class _RestartWidgetState extends State<RestartWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(
-      key: _key,
-      child: widget.child,
-    );
+    return KeyedSubtree(key: _key, child: widget.child);
   }
 }
 
@@ -102,11 +99,7 @@ class _CryptAILoaderState extends State<CryptAILoader> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/logo.png',
-                  width: 80,
-                  height: 80,
-                ),
+                Image.asset('assets/logo.png', width: 120, height: 120),
                 const SizedBox(height: 24),
                 const CircularProgressIndicator(),
               ],

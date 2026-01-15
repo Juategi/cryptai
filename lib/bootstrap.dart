@@ -36,24 +36,12 @@ Future<String?> getDatabaseKey() async {
 }
 
 /// Set up encryption for first-time users
-Future<void> setupEncryption({String? passphrase}) async {
+Future<void> setupEncryption() async {
   final secureStorage = SecureStorageService();
   final encryptionService = EncryptionService();
 
-  String databaseKey;
-
-  if (passphrase != null && passphrase.isNotEmpty) {
-    // Derive key from passphrase
-    final salt = encryptionService.generateSalt();
-    databaseKey = encryptionService.deriveKeyFromPassphrase(
-      passphrase,
-      salt,
-    );
-    await secureStorage.storePassphraseSalt(salt);
-  } else {
-    // Generate random key (device-protected only)
-    databaseKey = encryptionService.generateKey();
-  }
+  // Generate random key (device-protected)
+  final databaseKey = encryptionService.generateKey();
 
   await secureStorage.storeDatabaseKey(databaseKey);
   await secureStorage.setAppInitialized();
