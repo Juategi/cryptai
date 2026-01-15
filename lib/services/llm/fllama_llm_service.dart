@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fllama/fllama.dart';
-import 'package:fllama/fllama_type.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'llm_service.dart';
@@ -36,8 +36,10 @@ class FllamaLLMService implements LLMService {
       // Copy model from assets to app documents directory
       _modelPath = await _copyModelToDocuments();
       _isReady = true;
+      debugPrint('FllamaLLMService: Initialized, model at $_modelPath');
     } catch (e) {
       _isReady = false;
+      debugPrint('FllamaLLMService: Initialize failed: $e');
       rethrow;
     }
   }
@@ -85,6 +87,8 @@ class FllamaLLMService implements LLMService {
 
   @override
   Future<void> loadModel(String modelId) async {
+    debugPrint('FllamaLLMService: loadModel called with $modelId');
+
     if (_modelPath == null) {
       throw Exception('Model not initialized. Call initialize() first.');
     }
@@ -99,6 +103,8 @@ class FllamaLLMService implements LLMService {
       throw Exception('Fllama not available on this platform');
     }
 
+    debugPrint('FllamaLLMService: Initializing context...');
+
     // Initialize context with model
     final result = await fllama.initContext(
       _modelPath!,
@@ -107,6 +113,8 @@ class FllamaLLMService implements LLMService {
       nGpuLayers: 99,
       emitLoadProgress: true,
     );
+
+    debugPrint('FllamaLLMService: initContext result: $result');
 
     if (result != null && result['contextId'] != null) {
       _contextId = (result['contextId'] as num).toDouble();
@@ -119,6 +127,7 @@ class FllamaLLMService implements LLMService {
         isDownloaded: true,
         localPath: _modelPath,
       );
+      debugPrint('FllamaLLMService: Model loaded, contextId: $_contextId');
     } else {
       throw Exception('Failed to load model: context initialization failed');
     }
@@ -147,43 +156,30 @@ class FllamaLLMService implements LLMService {
     double topP = 0.9,
     void Function(String token)? onToken,
   }) async {
+    debugPrint('FllamaLLMService: generateResponse called');
     _isCancelled = false;
     final stopwatch = Stopwatch()..start();
 
     if (_contextId == null || _currentModel == null) {
+      debugPrint('FllamaLLMService: No model loaded!');
       return LLMResponse.error('No model loaded');
     }
 
     final fllama = Fllama.instance();
     if (fllama == null) {
+      debugPrint('FllamaLLMService: Fllama not available!');
       return LLMResponse.error('Fllama not available');
     }
 
     try {
-      // Build messages for chat format
-      final roleContents = <RoleContent>[];
-
-      // Add system prompt
+      // Build system prompt
       final sysPrompt =
           systemPrompt ??
-          'You are a helpful, private AI assistant running offline on the user\'s device. Be concise and helpful.';
-      roleContents.add(RoleContent(role: 'system', content: sysPrompt));
+          'You are a helpful, private AI assistant. Always respond in the same language the user writes to you. Be concise and helpful.';
 
-      // Add conversation messages
-      for (final message in messages) {
-        roleContents.add(
-          RoleContent(role: message.role, content: message.content),
-        );
-      }
-
-      // Get formatted prompt using model's chat template
-      String? formattedPrompt = await fllama.getFormattedChat(
-        _contextId!,
-        messages: roleContents,
-      );
-
-      // Fallback to manual ChatML format if getFormattedChat fails
-      formattedPrompt ??= _buildChatMLPrompt(messages, sysPrompt);
+      // Build prompt using ChatML format directly (avoid getFormattedChat issues)
+      final formattedPrompt = _buildChatMLPrompt(messages, sysPrompt);
+      debugPrint('FllamaLLMService: Prompt ready, length: ${formattedPrompt.length}');
 
       final responseBuffer = StringBuffer();
 
@@ -201,6 +197,8 @@ class FllamaLLMService implements LLMService {
         });
       }
 
+      debugPrint('FllamaLLMService: Starting completion...');
+
       // Start completion
       final result = await fllama.completion(
         _contextId!,
@@ -213,6 +211,8 @@ class FllamaLLMService implements LLMService {
         emitRealtimeCompletion: onToken != null,
       );
 
+      debugPrint('FllamaLLMService: Completion result: $result');
+
       // Cancel token subscription
       await _tokenSubscription?.cancel();
       _tokenSubscription = null;
@@ -221,11 +221,13 @@ class FllamaLLMService implements LLMService {
 
       // Get response from result or buffer
       String responseText;
-      if (onToken != null) {
+      if (onToken != null && responseBuffer.isNotEmpty) {
         responseText = responseBuffer.toString();
       } else {
         responseText = result?['text'] as String? ?? '';
       }
+
+      debugPrint('FllamaLLMService: Response text length: ${responseText.length}');
 
       if (_isCancelled) {
         return LLMResponse(
@@ -233,6 +235,10 @@ class FllamaLLMService implements LLMService {
           generationTime: stopwatch.elapsed,
           status: LLMResponseStatus.cancelled,
         );
+      }
+
+      if (responseText.isEmpty) {
+        return LLMResponse.error('Model returned empty response');
       }
 
       return LLMResponse(
@@ -243,6 +249,7 @@ class FllamaLLMService implements LLMService {
         wasStreamed: onToken != null,
       );
     } catch (e) {
+      debugPrint('FllamaLLMService: Error during generation: $e');
       stopwatch.stop();
       await _tokenSubscription?.cancel();
       _tokenSubscription = null;

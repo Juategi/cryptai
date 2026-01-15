@@ -64,11 +64,7 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
               const SizedBox(height: 48),
               // Logo
               Center(
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 120,
-                  height: 120,
-                ),
+                child: Image.asset('assets/logo.png', width: 120, height: 120),
               ),
               const SizedBox(height: 24),
               // Title
@@ -107,7 +103,7 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
                 title: 'Complete Privacy',
                 description: 'Your data never leaves your device.',
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               // Continue button
               FilledButton(
                 onPressed: _isLoading ? null : _setupEncryption,
@@ -155,11 +151,7 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
             color: AppColors.turquoise.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.turquoise,
-            size: 24,
-          ),
+          child: Icon(icon, color: AppColors.turquoise, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
