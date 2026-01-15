@@ -8,94 +8,112 @@ import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Screen showing list of all conversations
-class ChatListScreen extends ConsumerWidget {
+class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Clean up empty conversations when returning to this screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(conversationRepositoryProvider).deleteEmptyConversations();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
+      body: SafeArea(
+        child: Column(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.all(2),
-              child: Image.asset('assets/icon.png'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: Image.asset('assets/logo.png', width: 80, height: 80),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  onPressed: () => context.push('/settings'),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            const Text('CryptAI'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/settings'),
-          ),
-        ],
-      ),
-      body: conversationsAsync.when(
-        data: (conversations) {
-          if (conversations.isEmpty) {
-            return EmptyStateWidget(
-              icon: Icons.chat_bubble_outline_rounded,
-              title: 'No Conversations',
-              message: 'Start a new chat to begin your private AI experience',
-              actionLabel: 'New Chat',
-              onAction: () => _createNewChat(context, ref),
-            );
-          }
+            const Divider(),
+            Expanded(
+              child: SizedBox(
+                child: conversationsAsync.when(
+                  data: (conversations) {
+                    if (conversations.isEmpty) {
+                      return EmptyStateWidget(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        title: 'No Conversations',
+                        message:
+                            'Start a new chat to begin your private AI experience',
+                        actionLabel: 'New Chat',
+                        onAction: () => _createNewChat(context),
+                      );
+                    }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: conversations.length,
-            itemBuilder: (context, index) {
-              final conversation = conversations[index];
-              return _ConversationTile(
-                conversation: conversation,
-                onTap: () {
-                  ref
-                      .read(activeConversationProvider.notifier)
-                      .setConversation(conversation);
-                  context.push('/chat/${conversation.id}');
-                },
-                onDelete: () => _deleteConversation(context, ref, conversation),
-              );
-            },
-          );
-        },
-        loading: () => const LoadingWidget(message: 'Loading conversations...'),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-              const SizedBox(height: 16),
-              Text('Error: $error'),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.refresh(conversationsProvider),
-                child: const Text('Retry'),
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: conversations.length,
+                      itemBuilder: (context, index) {
+                        final conversation = conversations[index];
+                        return _ConversationTile(
+                          conversation: conversation,
+                          onTap: () {
+                            ref
+                                .read(activeConversationProvider.notifier)
+                                .setConversation(conversation);
+                            context.push('/chat/${conversation.id}');
+                          },
+                          onDelete: () =>
+                              _deleteConversation(context, conversation),
+                        );
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const LoadingWidget(message: 'Loading conversations...'),
+                  error: (error, stack) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Error: $error'),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () => ref.refresh(conversationsProvider),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _createNewChat(context, ref),
+        onPressed: () => _createNewChat(context),
         child: const Icon(Icons.add_rounded),
       ),
     );
   }
 
-  Future<void> _createNewChat(BuildContext context, WidgetRef ref) async {
+  Future<void> _createNewChat(BuildContext context) async {
     final repo = ref.read(conversationRepositoryProvider);
     final conversation = await repo.createConversation(title: 'New Chat');
     ref.read(activeConversationProvider.notifier).setConversation(conversation);
@@ -106,7 +124,6 @@ class ChatListScreen extends ConsumerWidget {
 
   Future<void> _deleteConversation(
     BuildContext context,
-    WidgetRef ref,
     ConversationModel conversation,
   ) async {
     final confirmed = await showDialog<bool>(

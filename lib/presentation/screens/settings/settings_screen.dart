@@ -15,19 +15,20 @@ class SettingsScreen extends ConsumerWidget {
     final currentModel = ref.watch(currentModelProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
           // AI Model Section
           _SectionHeader(title: 'AI Model'),
-          ListTile(
-            leading: const Icon(Icons.smart_toy_outlined),
-            title: const Text('Current Model'),
-            subtitle: Text(currentModel?.name ?? 'Mock Fast'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showModelSelection(context, ref),
+          Visibility(
+            visible: false,
+            child: ListTile(
+              leading: const Icon(Icons.smart_toy_outlined),
+              title: const Text('Current Model'),
+              subtitle: Text(currentModel?.name ?? 'Mock Fast'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _showModelSelection(context, ref),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.tune_outlined),
@@ -39,9 +40,12 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.thermostat_outlined),
             title: const Text('Temperature'),
-            subtitle: Text('${settings.temperature.toStringAsFixed(1)} (${_temperatureLabel(settings.temperature)})'),
+            subtitle: Text(
+              '${settings.temperature.toStringAsFixed(1)} (${_temperatureLabel(settings.temperature)})',
+            ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showTemperatureDialog(context, ref, settings.temperature),
+            onTap: () =>
+                _showTemperatureDialog(context, ref, settings.temperature),
           ),
           const Divider(),
 
@@ -151,25 +155,27 @@ class SettingsScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
-            ...models.map((model) => ListTile(
-                  leading: Icon(
-                    model.isDownloaded
-                        ? Icons.check_circle
-                        : Icons.download_outlined,
-                    color: model.isDownloaded ? AppColors.success : null,
-                  ),
-                  title: Text(model.name),
-                  subtitle: Text(model.description ?? ''),
-                  enabled: model.isDownloaded,
-                  onTap: model.isDownloaded
-                      ? () {
-                          ref
-                              .read(settingsProvider.notifier)
-                              .updateSelectedModel(model.id);
-                          Navigator.pop(context);
-                        }
-                      : null,
-                )),
+            ...models.map(
+              (model) => ListTile(
+                leading: Icon(
+                  model.isDownloaded
+                      ? Icons.check_circle
+                      : Icons.download_outlined,
+                  color: model.isDownloaded ? AppColors.success : null,
+                ),
+                title: Text(model.name),
+                subtitle: Text(model.description ?? ''),
+                enabled: model.isDownloaded,
+                onTap: model.isDownloaded
+                    ? () {
+                        ref
+                            .read(settingsProvider.notifier)
+                            .updateSelectedModel(model.id);
+                        Navigator.pop(context);
+                      }
+                    : null,
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -257,8 +263,8 @@ class SettingsScreen extends ConsumerWidget {
               Text(
                 _temperatureLabel(value),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
               Slider(
                 value: value,
@@ -331,9 +337,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Delete Everything'),
           ),
         ],
@@ -351,9 +355,7 @@ class SettingsScreen extends ConsumerWidget {
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('All data has been cleared'),
-            ),
+            const SnackBar(content: Text('All data has been cleared')),
           );
         }
       } catch (e) {
@@ -397,9 +399,7 @@ class SettingsScreen extends ConsumerWidget {
       await ref.read(settingsProvider.notifier).resetToDefaults();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Settings have been reset'),
-          ),
+          const SnackBar(content: Text('Settings have been reset')),
         );
       }
     }
@@ -420,10 +420,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.wifi_off,
               text: '100% offline - no internet required',
             ),
-            _PrivacyItem(
-              icon: Icons.lock,
-              text: 'AES-256 encrypted storage',
-            ),
+            _PrivacyItem(icon: Icons.lock, text: 'AES-256 encrypted storage'),
             _PrivacyItem(
               icon: Icons.phone_android,
               text: 'All data stays on your device',
@@ -461,9 +458,9 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -473,10 +470,7 @@ class _PrivacyItem extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _PrivacyItem({
-    required this.icon,
-    required this.text,
-  });
+  const _PrivacyItem({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {

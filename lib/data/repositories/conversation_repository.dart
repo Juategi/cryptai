@@ -98,6 +98,16 @@ class ConversationRepository {
     await _db.deleteConversation(id);
   }
 
+  /// Delete all empty conversations (no messages)
+  Future<void> deleteEmptyConversations() async {
+    final conversations = await getAllConversations();
+    for (final conversation in conversations) {
+      if (conversation.messageCount == 0) {
+        await deleteConversation(conversation.id);
+      }
+    }
+  }
+
   ConversationModel _mapToModel(Conversation data) {
     return ConversationModel(
       id: data.id,
