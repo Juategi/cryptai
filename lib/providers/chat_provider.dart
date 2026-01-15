@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/message_model.dart';
+import '../data/repositories/conversation_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../domain/enums/message_role.dart';
 import '../domain/enums/message_status.dart';
@@ -122,6 +124,11 @@ class ChatController extends StateNotifier<ChatState> {
               : response.content,
           messageCount: messageCount,
         );
+
+        // Generate title from first message (if it's a new conversation)
+        if (conversation.title == 'New Chat' && messages.length == 1) {
+          _generateTitle(content, llmService, conversationRepo, conversation.id);
+        }
       } else if (response.status == LLMResponseStatus.cancelled) {
         // Handle cancellation - save partial response if any
         if (state.streamingContent.isNotEmpty) {
@@ -152,5 +159,107 @@ class ChatController extends StateNotifier<ChatState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  /// Generate a title for the conversation based on the first message
+  Future<void> _generateTitle(
+    String userMessage,
+    LLMService llmService,
+    ConversationRepository conversationRepo,
+    String conversationId,
+  ) async {
+    try {
+      // Use a more explicit prompt format that forces the model to output just a title
+      final titleResponse = await llmService.generateResponse(
+        messages: [
+          LLMMessage(
+            role: 'user',
+            content: 'Extract the main topic from this text in 2-4 words. Output ONLY the topic, nothing else.\n\nText: "$userMessage"\n\nTopic:',
+          ),
+        ],
+        systemPrompt:
+            'You are a title extractor. Output only 2-4 words describing the main topic. No explanations, no sentences, no punctuation. Just the topic words.',
+        maxTokens: 10,
+        temperature: 0.1,
+      );
+
+      if (titleResponse.isSuccess && titleResponse.content.isNotEmpty) {
+        // Clean the title
+        String title = titleResponse.content
+            .replaceAll('"', '')
+            .replaceAll("'", '')
+            .replaceAll('.', '')
+            .replaceAll(':', '')
+            .replaceAll('!', '')
+            .replaceAll('?', '')
+            .replaceAll('\n', ' ')
+            .trim();
+
+        // Reject conversational responses (starts with common conversation starters)
+        final lowerTitle = title.toLowerCase();
+        if (lowerTitle.startsWith('sure') ||
+            lowerTitle.startsWith('here') ||
+            lowerTitle.startsWith('the topic') ||
+            lowerTitle.startsWith('i ') ||
+            lowerTitle.startsWith('this ') ||
+            lowerTitle.startsWith('okay') ||
+            lowerTitle.startsWith('ok ') ||
+            lowerTitle.contains('topic is')) {
+          // Fallback: extract key words from user message
+          title = _extractKeyWords(userMessage);
+        }
+
+        // Limit to 4 words max
+        final words = title.split(' ').where((w) => w.isNotEmpty).toList();
+        if (words.length > 4) {
+          title = words.take(4).join(' ');
+        }
+
+        if (title.isNotEmpty && title.length > 1) {
+          await conversationRepo.updateTitle(conversationId, title);
+
+          // Update active conversation
+          final conversation = _ref.read(activeConversationProvider);
+          if (conversation != null && conversation.id == conversationId) {
+            _ref
+                .read(activeConversationProvider.notifier)
+                .setConversation(conversation.copyWith(title: title));
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail - title generation is not critical
+      debugPrint('Failed to generate title: $e');
+    }
+  }
+
+  /// Fallback method to extract key words from user message
+  String _extractKeyWords(String message) {
+    // Remove common question words and extract meaningful words
+    final stopWords = {
+      'what', 'how', 'why', 'when', 'where', 'who', 'which', 'is', 'are', 'was',
+      'were', 'do', 'does', 'did', 'can', 'could', 'would', 'should', 'will',
+      'the', 'a', 'an', 'of', 'to', 'in', 'for', 'on', 'with', 'at', 'by',
+      'from', 'as', 'be', 'this', 'that', 'it', 'and', 'or', 'but', 'if',
+      'me', 'my', 'i', 'you', 'your', 'we', 'our', 'they', 'their', 'about',
+      'tell', 'explain', 'describe', 'give', 'show', 'please', 'help',
+      'que', 'como', 'por', 'para', 'el', 'la', 'los', 'las', 'un', 'una',
+      'de', 'en', 'es', 'son', 'del', 'al', 'con', 'se', 'su', 'sus', 'mi',
+    };
+
+    final words = message
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.length > 2 && !stopWords.contains(w))
+        .take(4)
+        .toList();
+
+    if (words.isEmpty) {
+      return 'Chat';
+    }
+
+    // Capitalize first letter of each word
+    return words.map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
   }
 }

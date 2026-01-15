@@ -5,7 +5,7 @@ import '../../../main.dart';
 import '../../../services/encryption/encryption_service.dart';
 import '../../../services/storage/secure_storage_service.dart';
 
-/// Initial setup screen for configuring encryption
+/// Setup screen that initializes encryption
 class EncryptionSetupScreen extends ConsumerStatefulWidget {
   const EncryptionSetupScreen({super.key});
 
@@ -15,20 +15,33 @@ class EncryptionSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
-  bool _isLoading = false;
+  String _status = 'Setting up encryption...';
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupEncryption();
+  }
 
   Future<void> _setupEncryption() async {
-    setState(() => _isLoading = true);
-
     try {
+      setState(() => _status = 'Generating encryption key...');
+
       final encryptionService = EncryptionService();
       final secureStorage = SecureStorageService();
 
       // Generate random key (device-protected)
       final databaseKey = encryptionService.generateKey();
 
+      setState(() => _status = 'Securing your data...');
+
       await secureStorage.storeDatabaseKey(databaseKey);
       await secureStorage.setAppInitialized();
+
+      setState(() => _status = 'Ready!');
+
+      await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
         // Restart app to reinitialize with database
@@ -36,16 +49,10 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error setting up encryption: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _status = 'Error: $e';
+          _hasError = true;
+        });
       }
     }
   }
@@ -55,126 +62,42 @@ class _EncryptionSetupScreenState extends ConsumerState<EncryptionSetupScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 48),
-              // Logo
-              Center(
-                child: Image.asset('assets/logo.png', width: 120, height: 120),
-              ),
-              const SizedBox(height: 24),
-              // Title
+              Image.asset('assets/logo.png', width: 100, height: 100),
+              const SizedBox(height: 32),
+              if (!_hasError) ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 24),
+              ],
               Text(
-                'Welcome to CryptAI',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blueDark,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Your private, offline AI assistant',
+                _status,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: AppColors.blueDeep,
+                  color: _hasError ? AppColors.error : AppColors.blueDeep,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 48),
-              // Privacy features
-              _buildFeatureCard(
-                icon: Icons.wifi_off_rounded,
-                title: '100% Offline',
-                description: 'No internet required. All processing on-device.',
-              ),
-              const SizedBox(height: 12),
-              _buildFeatureCard(
-                icon: Icons.security_rounded,
-                title: 'Encrypted Storage',
-                description: 'All conversations encrypted with AES-256.',
-              ),
-              const SizedBox(height: 12),
-              _buildFeatureCard(
-                icon: Icons.visibility_off_rounded,
-                title: 'Complete Privacy',
-                description: 'Your data never leaves your device.',
-              ),
-              const SizedBox(height: 48),
-              // Continue button
-              FilledButton(
-                onPressed: _isLoading ? null : _setupEncryption,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Get Started'),
+              if (_hasError) ...[
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () {
+                    setState(() {
+                      _hasError = false;
+                      _status = 'Setting up encryption...';
+                    });
+                    _setupEncryption();
+                  },
+                  child: const Text('Retry'),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'By continuing, you agree to keep your data on this device only.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.turquoise.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: AppColors.turquoise, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blueDark,
-                ),
-              ),
-              Text(
-                description,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.blueDeep,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

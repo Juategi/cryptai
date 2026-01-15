@@ -207,7 +207,7 @@ class FllamaLLMService implements LLMService {
         topP: topP,
         nPredict: maxTokens,
         penaltyRepeat: 1.1,
-        stop: ['<|end|>', '<|user|>', '<|endoftext|>'],
+        stop: ['<|end|>', '<|user|>', '<|endoftext|>', '</s>'],
         emitRealtimeCompletion: onToken != null,
       );
 
@@ -293,6 +293,7 @@ class FllamaLLMService implements LLMService {
         .replaceAll('<|user|>', '')
         .replaceAll('<|system|>', '')
         .replaceAll('<|endoftext|>', '')
+        .replaceAll('</s>', '')
         .trim();
   }
 

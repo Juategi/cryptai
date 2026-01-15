@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../screens/onboarding/welcome_screen.dart';
 import '../screens/onboarding/encryption_setup_screen.dart';
 import '../screens/chat_list/chat_list_screen.dart';
 import '../screens/chat/chat_screen.dart';
@@ -11,16 +12,21 @@ class AppRouter {
   AppRouter({required this.isInitialized});
 
   late final GoRouter router = GoRouter(
-    initialLocation: isInitialized ? '/' : '/setup',
+    initialLocation: '/',
     routes: [
+      GoRoute(
+        path: '/',
+        name: 'welcome',
+        builder: (context, state) => WelcomeScreen(needsSetup: !isInitialized),
+      ),
       GoRoute(
         path: '/setup',
         name: 'setup',
         builder: (context, state) => const EncryptionSetupScreen(),
       ),
       GoRoute(
-        path: '/',
-        name: 'home',
+        path: '/chats',
+        name: 'chats',
         builder: (context, state) => const ChatListScreen(),
       ),
       GoRoute(
