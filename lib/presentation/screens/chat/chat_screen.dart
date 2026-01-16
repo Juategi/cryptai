@@ -170,6 +170,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     data: (messages) {
                       if (messages.isEmpty && !chatState.isGenerating) {
                         final theme = Theme.of(context);
+                        final isDarkMode =
+                            theme.brightness == Brightness.dark;
                         return Padding(
                           padding: const EdgeInsets.all(16),
                           child: ListView(
@@ -177,7 +179,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               // Logo
                               Center(
                                 child: Image.asset(
-                                  'assets/logo.png',
+                                  isDarkMode
+                                      ? 'assets/logo_dark.png'
+                                      : 'assets/logo.png',
                                   width: 80,
                                   height: 80,
                                 ),
@@ -188,7 +192,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 'Welcome to CryptAI',
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.blueDark,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -196,7 +200,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               Text(
                                 'Your private, offline AI assistant',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.blueDeep,
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -226,14 +230,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               Text(
                                 'Start the conversation',
                                 style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: AppColors.blueDeep,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                               Text(
                                 'Send a message to begin chatting with your private AI',
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.blueDeep,
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -290,10 +294,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.turquoise.withValues(alpha: 0.1),
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: AppColors.turquoise, size: 24),
+          child: Icon(icon, color: theme.colorScheme.primary, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -304,13 +308,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.blueDark,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               Text(
                 description,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.blueDeep,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -383,7 +387,13 @@ class _ChatDrawerState extends ConsumerState<_ChatDrawer> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
-                child: Image.asset('assets/logo.png', width: 70, height: 70),
+                child: Image.asset(
+                  theme.brightness == Brightness.dark
+                      ? 'assets/logo_dark.png'
+                      : 'assets/logo.png',
+                  width: 70,
+                  height: 70,
+                ),
               ),
             ),
             // Search bar
@@ -410,7 +420,11 @@ class _ChatDrawerState extends ConsumerState<_ChatDrawer> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: theme.colorScheme.outline),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide(color: theme.colorScheme.outline),
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest,
@@ -424,14 +438,14 @@ class _ChatDrawerState extends ConsumerState<_ChatDrawer> {
               title: const Text('New chat'),
               onTap: widget.onNewChat,
             ),
-            const Divider(),
+            Divider(color: theme.colorScheme.outlineVariant),
             // Conversation list
             Expanded(
               child: _isSearching
                   ? const Center(child: CircularProgressIndicator())
                   : _buildConversationList(conversationsAsync, theme),
             ),
-            const Divider(),
+            Divider(color: theme.colorScheme.outlineVariant),
             // Settings button
             ListTile(
               leading: const Icon(Icons.settings_outlined),
@@ -606,35 +620,43 @@ class _DrawerConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    return GestureDetector(
-      onLongPressStart: (details) {
-        _showContextMenu(context, details.globalPosition);
-      },
-      child: ListTile(
-        selected: isSelected,
-        selectedTileColor: theme.colorScheme.primaryContainer.withValues(
-          alpha: 0.3,
-        ),
-        title: Text(
-          conversation.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+    if (conversation.title == ' ') {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: GestureDetector(
+        onLongPressStart: (details) {
+          _showContextMenu(context, details.globalPosition);
+        },
+        child: ListTile(
+          selected: isSelected,
+          selectedTileColor: theme.colorScheme.primaryContainer.withValues(
+            alpha: 0.3,
           ),
+          title: Text(
+            conversation.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              color: isSelected ? theme.colorScheme.onPrimaryContainer : null,
+            ),
+          ),
+          subtitle: conversation.lastMessagePreview != null
+              ? Text(
+                  conversation.lastMessagePreview!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isSelected
+                        ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7)
+                        : theme.colorScheme.outline,
+                  ),
+                )
+              : null,
+          onTap: onTap,
         ),
-        subtitle: conversation.lastMessagePreview != null
-            ? Text(
-                conversation.lastMessagePreview!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-              )
-            : null,
-        onTap: onTap,
       ),
     );
   }
