@@ -90,7 +90,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _createNewChat() async {
     final repo = ref.read(conversationRepositoryProvider);
-    final conversation = await repo.createConversation(title: 'New Chat');
+    final conversation = await repo.createConversation(title: ' ');
     if (mounted) {
       _currentConversationId = conversation.id;
       ref
@@ -170,11 +170,76 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   child: messagesAsync.when(
                     data: (messages) {
                       if (messages.isEmpty && !chatState.isGenerating) {
-                        return EmptyStateWidget(
-                          icon: Icons.chat_outlined,
-                          title: 'Start the conversation',
-                          message:
-                              'Send a message to begin chatting with your private AI',
+                        final theme = Theme.of(context);
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              // Logo
+                              Center(
+                                child: Image.asset(
+                                  'assets/logo.png',
+                                  width: 80,
+                                  height: 80,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              // Title
+                              Text(
+                                'Welcome to CryptAI',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.blueDark,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Your private, offline AI assistant',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.blueDeep,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 30),
+                              // Privacy features
+                              _buildFeatureCard(
+                                icon: Icons.wifi_off_rounded,
+                                title: '100% Offline',
+                                description:
+                                    'No internet required. All processing on-device.',
+                              ),
+                              const SizedBox(height: 12),
+                              _buildFeatureCard(
+                                icon: Icons.security_rounded,
+                                title: 'Encrypted Storage',
+                                description:
+                                    'All conversations encrypted with AES-256.',
+                              ),
+                              const SizedBox(height: 12),
+                              _buildFeatureCard(
+                                icon: Icons.visibility_off_rounded,
+                                title: 'Complete Privacy',
+                                description:
+                                    'Your data never leaves your device.',
+                              ),
+                              const Spacer(),
+                              Text(
+                                'Start the conversation',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: AppColors.blueDeep,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                'Send a message to begin chatting with your private AI',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.blueDeep,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         );
                       }
 
@@ -211,6 +276,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildFeatureCard({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.turquoise.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppColors.turquoise, size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blueDark,
+                ),
+              ),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.blueDeep,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -273,19 +380,11 @@ class _ChatDrawerState extends ConsumerState<_ChatDrawer> {
       child: SafeArea(
         child: Column(
           children: [
-            // Header with logo and new chat
+            // Header with logo
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Row(
-                children: [
-                  Image.asset('assets/logo.png', width: 40, height: 40),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: widget.onNewChat,
-                    icon: const Icon(Icons.edit_square),
-                    tooltip: 'New Chat',
-                  ),
-                ],
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: Image.asset('assets/logo.png', width: 70, height: 70),
               ),
             ),
             // Search bar
@@ -319,6 +418,12 @@ class _ChatDrawerState extends ConsumerState<_ChatDrawer> {
                 ),
                 onChanged: _performSearch,
               ),
+            ),
+            // New chat button
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: const Text('New chat'),
+              onTap: widget.onNewChat,
             ),
             const Divider(),
             // Conversation list

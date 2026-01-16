@@ -19,8 +19,8 @@ class ConversationRepository {
   /// Watch all conversations for reactive updates
   Stream<List<ConversationModel>> watchAllConversations() {
     return _db.watchAllConversations().map(
-          (list) => list.map(_mapToModel).toList(),
-        );
+      (list) => list.map(_mapToModel).toList(),
+    );
   }
 
   /// Get a conversation by ID
@@ -31,7 +31,7 @@ class ConversationRepository {
 
   /// Create a new conversation
   Future<ConversationModel> createConversation({
-    String title = 'New Chat',
+    String title = ' ',
     String? systemPrompt,
   }) async {
     final now = DateTime.now();
@@ -86,10 +86,12 @@ class ConversationRepository {
   }) async {
     final conversation = await getConversation(id);
     if (conversation != null) {
-      await updateConversation(conversation.copyWith(
-        lastMessagePreview: lastMessagePreview,
-        messageCount: messageCount,
-      ));
+      await updateConversation(
+        conversation.copyWith(
+          lastMessagePreview: lastMessagePreview,
+          messageCount: messageCount,
+        ),
+      );
     }
   }
 

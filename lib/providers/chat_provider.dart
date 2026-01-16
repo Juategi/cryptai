@@ -29,10 +29,11 @@ final chatMessagesProvider = StreamProvider<List<MessageModel>>((ref) {
 });
 
 /// Provider for chat state and actions
-final chatControllerProvider =
-    StateNotifierProvider<ChatController, ChatState>((ref) {
-  return ChatController(ref);
-});
+final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>(
+  (ref) {
+    return ChatController(ref);
+  },
+);
 
 /// State for the chat
 class ChatState {
@@ -71,7 +72,11 @@ class ChatController extends StateNotifier<ChatState> {
     final conversation = _ref.read(activeConversationProvider);
     if (conversation == null) return;
 
-    state = state.copyWith(isGenerating: true, error: null, streamingContent: '');
+    state = state.copyWith(
+      isGenerating: true,
+      error: null,
+      streamingContent: '',
+    );
 
     try {
       final messageRepo = _ref.read(messageRepositoryProvider);
@@ -87,11 +92,12 @@ class ChatController extends StateNotifier<ChatState> {
       );
 
       // Get conversation history for context
-      final messages = await messageRepo.getMessagesForConversation(conversation.id);
-      final llmMessages = messages.map((m) => LLMMessage(
-            role: m.role.name,
-            content: m.content,
-          )).toList();
+      final messages = await messageRepo.getMessagesForConversation(
+        conversation.id,
+      );
+      final llmMessages = messages
+          .map((m) => LLMMessage(role: m.role.name, content: m.content))
+          .toList();
 
       // Generate response with streaming
       final response = await llmService.generateResponse(
@@ -126,8 +132,13 @@ class ChatController extends StateNotifier<ChatState> {
         );
 
         // Generate title from first message (if it's a new conversation)
-        if (conversation.title == 'New Chat' && messages.length == 1) {
-          _generateTitle(content, llmService, conversationRepo, conversation.id);
+        if (conversation.title == ' ' && messages.length == 1) {
+          _generateTitle(
+            content,
+            llmService,
+            conversationRepo,
+            conversation.id,
+          );
         }
       } else if (response.status == LLMResponseStatus.cancelled) {
         // Handle cancellation - save partial response if any
@@ -145,10 +156,7 @@ class ChatController extends StateNotifier<ChatState> {
     } catch (e) {
       state = state.copyWith(error: e.toString());
     } finally {
-      state = state.copyWith(
-        isGenerating: false,
-        streamingContent: '',
-      );
+      state = state.copyWith(isGenerating: false, streamingContent: '');
     }
   }
 
@@ -174,7 +182,8 @@ class ChatController extends StateNotifier<ChatState> {
         messages: [
           LLMMessage(
             role: 'user',
-            content: 'Extract the main topic from this text in 2-4 words. Output ONLY the topic, nothing else.\n\nText: "$userMessage"\n\nTopic:',
+            content:
+                'Extract the main topic from this text in 2-4 words. Output ONLY the topic, nothing else.\n\nText: "$userMessage"\n\nTopic:',
           ),
         ],
         systemPrompt:
@@ -237,14 +246,84 @@ class ChatController extends StateNotifier<ChatState> {
   String _extractKeyWords(String message) {
     // Remove common question words and extract meaningful words
     final stopWords = {
-      'what', 'how', 'why', 'when', 'where', 'who', 'which', 'is', 'are', 'was',
-      'were', 'do', 'does', 'did', 'can', 'could', 'would', 'should', 'will',
-      'the', 'a', 'an', 'of', 'to', 'in', 'for', 'on', 'with', 'at', 'by',
-      'from', 'as', 'be', 'this', 'that', 'it', 'and', 'or', 'but', 'if',
-      'me', 'my', 'i', 'you', 'your', 'we', 'our', 'they', 'their', 'about',
-      'tell', 'explain', 'describe', 'give', 'show', 'please', 'help',
-      'que', 'como', 'por', 'para', 'el', 'la', 'los', 'las', 'un', 'una',
-      'de', 'en', 'es', 'son', 'del', 'al', 'con', 'se', 'su', 'sus', 'mi',
+      'what',
+      'how',
+      'why',
+      'when',
+      'where',
+      'who',
+      'which',
+      'is',
+      'are',
+      'was',
+      'were',
+      'do',
+      'does',
+      'did',
+      'can',
+      'could',
+      'would',
+      'should',
+      'will',
+      'the',
+      'a',
+      'an',
+      'of',
+      'to',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'as',
+      'be',
+      'this',
+      'that',
+      'it',
+      'and',
+      'or',
+      'but',
+      'if',
+      'me',
+      'my',
+      'i',
+      'you',
+      'your',
+      'we',
+      'our',
+      'they',
+      'their',
+      'about',
+      'tell',
+      'explain',
+      'describe',
+      'give',
+      'show',
+      'please',
+      'help',
+      'que',
+      'como',
+      'por',
+      'para',
+      'el',
+      'la',
+      'los',
+      'las',
+      'un',
+      'una',
+      'de',
+      'en',
+      'es',
+      'son',
+      'del',
+      'al',
+      'con',
+      'se',
+      'su',
+      'sus',
+      'mi',
     };
 
     final words = message
