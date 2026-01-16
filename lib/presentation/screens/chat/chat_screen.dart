@@ -10,7 +10,6 @@ import '../../../providers/settings_provider.dart';
 import '../../widgets/chat/message_list.dart';
 import '../../widgets/chat/chat_input_field.dart';
 import '../../widgets/chat/typing_indicator.dart';
-import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/loading_widget.dart';
 
 /// Main chat screen with drawer for conversation list
@@ -173,7 +172,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         final theme = Theme.of(context);
                         return Padding(
                           padding: const EdgeInsets.all(16),
-                          child: Column(
+                          child: ListView(
                             children: [
                               // Logo
                               Center(
@@ -223,7 +222,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 description:
                                     'Your data never leaves your device.',
                               ),
-                              const Spacer(),
+                              const SizedBox(height: 60),
                               Text(
                                 'Start the conversation',
                                 style: theme.textTheme.headlineSmall?.copyWith(
