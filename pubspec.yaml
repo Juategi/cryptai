@@ -42,6 +42,9 @@ dependencies:
   # Local LLM inference
   fllama: ^0.0.1
 
+  # Speech-to-text (offline, uses native device engines)
+  speech_to_text: ^7.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
