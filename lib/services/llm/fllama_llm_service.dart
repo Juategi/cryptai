@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:fllama/fllama.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -17,26 +16,32 @@ class FllamaLLMService implements LLMService {
   double? _contextId;
   StreamSubscription? _tokenSubscription;
 
-  static const String _modelAssetPath = 'assets/llama.gguf';
   static const String _modelFileName = 'llama.gguf';
 
-  final LLMModelInfo _phi3Model = const LLMModelInfo(
-    id: 'llama',
-    name: 'Tiny Llama Phi-3 Mini',
+  final LLMModelInfo _tinyLlamaModel = const LLMModelInfo(
+    id: 'tinyllama',
+    name: 'TinyLlama 1.1B Chat',
     description:
-        'A compact Phi-3 based LLaMA model optimized for local inference.',
-    parameterCount: 4,
-    requiredMemoryMB: 2500,
-    isDownloaded: true,
+        'A compact 1.1B parameter model optimized for chat and local inference.',
+    parameterCount: 1,
+    requiredMemoryMB: 1500,
+    isDownloaded: false,
   );
 
   @override
   Future<void> initialize() async {
     try {
-      // Copy model from assets to app documents directory
-      _modelPath = await _copyModelToDocuments();
-      _isReady = true;
-      debugPrint('FllamaLLMService: Initialized, model at $_modelPath');
+      // Check if model exists in documents directory (downloaded by user)
+      _modelPath = await _getModelPath();
+      final modelFile = File(_modelPath!);
+
+      if (await modelFile.exists()) {
+        _isReady = true;
+        debugPrint('FllamaLLMService: Initialized, model at $_modelPath');
+      } else {
+        _isReady = false;
+        debugPrint('FllamaLLMService: Model not found at $_modelPath');
+      }
     } catch (e) {
       _isReady = false;
       debugPrint('FllamaLLMService: Initialize failed: $e');
@@ -44,24 +49,16 @@ class FllamaLLMService implements LLMService {
     }
   }
 
-  /// Copy the GGUF model from assets to documents directory
-  Future<String> _copyModelToDocuments() async {
+  /// Get the path where the model should be stored
+  Future<String> _getModelPath() async {
     final documentsDir = await getApplicationDocumentsDirectory();
-    final modelFile = File(p.join(documentsDir.path, _modelFileName));
+    return p.join(documentsDir.path, _modelFileName);
+  }
 
-    // Check if model already exists
-    if (await modelFile.exists()) {
-      return modelFile.path;
-    }
-
-    // Copy from assets
-    final byteData = await rootBundle.load(_modelAssetPath);
-    final buffer = byteData.buffer;
-    await modelFile.writeAsBytes(
-      buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
-    );
-
-    return modelFile.path;
+  /// Check if model file exists
+  Future<bool> isModelAvailable() async {
+    final path = await _getModelPath();
+    return File(path).exists();
   }
 
   @override
@@ -74,11 +71,11 @@ class FllamaLLMService implements LLMService {
   Future<List<LLMModelInfo>> getAvailableModels() async {
     return [
       LLMModelInfo(
-        id: _phi3Model.id,
-        name: _phi3Model.name,
-        description: _phi3Model.description,
-        parameterCount: _phi3Model.parameterCount,
-        requiredMemoryMB: _phi3Model.requiredMemoryMB,
+        id: _tinyLlamaModel.id,
+        name: _tinyLlamaModel.name,
+        description: _tinyLlamaModel.description,
+        parameterCount: _tinyLlamaModel.parameterCount,
+        requiredMemoryMB: _tinyLlamaModel.requiredMemoryMB,
         isDownloaded: true,
         localPath: _modelPath,
       ),
@@ -119,11 +116,11 @@ class FllamaLLMService implements LLMService {
     if (result != null && result['contextId'] != null) {
       _contextId = (result['contextId'] as num).toDouble();
       _currentModel = LLMModelInfo(
-        id: _phi3Model.id,
-        name: _phi3Model.name,
-        description: _phi3Model.description,
-        parameterCount: _phi3Model.parameterCount,
-        requiredMemoryMB: _phi3Model.requiredMemoryMB,
+        id: _tinyLlamaModel.id,
+        name: _tinyLlamaModel.name,
+        description: _tinyLlamaModel.description,
+        parameterCount: _tinyLlamaModel.parameterCount,
+        requiredMemoryMB: _tinyLlamaModel.requiredMemoryMB,
         isDownloaded: true,
         localPath: _modelPath,
       );

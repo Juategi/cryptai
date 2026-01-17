@@ -7,12 +7,20 @@ import 'providers/settings_provider.dart';
 /// Main application widget
 class CryptAIApp extends ConsumerWidget {
   final bool isInitialized;
+  final bool isModelDownloaded;
 
-  const CryptAIApp({super.key, required this.isInitialized});
+  const CryptAIApp({
+    super.key,
+    required this.isInitialized,
+    required this.isModelDownloaded,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = AppRouter(isInitialized: isInitialized).router;
+    final router = AppRouter(
+      isInitialized: isInitialized,
+      isModelDownloaded: isModelDownloaded,
+    ).router;
 
     // Only access settings when database is initialized
     final themeMode = isInitialized

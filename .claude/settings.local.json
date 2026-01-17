@@ -5,7 +5,9 @@
       "Bash(dart run build_runner build:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter clean:*)",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(keytool:*)",
+      "Bash(flutter build:*)"
     ]
   }
 }

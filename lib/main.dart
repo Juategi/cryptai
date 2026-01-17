@@ -4,6 +4,7 @@ import 'app.dart';
 import 'bootstrap.dart';
 import 'providers/database_provider.dart';
 import 'providers/llm_provider.dart';
+import 'services/model/model_download_service.dart';
 
 void main() async {
   // Initialize app
@@ -52,6 +53,7 @@ class CryptAILoader extends StatefulWidget {
 class _CryptAILoaderState extends State<CryptAILoader> {
   bool _isLoading = true;
   bool _isInitialized = false;
+  bool _isModelDownloaded = false;
   List<Override> _overrides = [];
 
   @override
@@ -64,6 +66,10 @@ class _CryptAILoaderState extends State<CryptAILoader> {
     // Check if app has been initialized (encryption set up)
     final isInitialized = await isAppInitialized();
 
+    // Check if model is downloaded
+    final modelService = ModelDownloadService();
+    final isModelDownloaded = await modelService.isModelDownloaded();
+
     // If initialized, set up database and services
     List<Override> overrides = [];
 
@@ -74,15 +80,18 @@ class _CryptAILoaderState extends State<CryptAILoader> {
         final database = await createDatabase(dbKey);
         overrides.add(databaseProvider.overrideWithValue(database));
 
-        // Create LLM service
-        final llmService = await createLLMService();
-        overrides.add(llmServiceProvider.overrideWithValue(llmService));
+        // Only create LLM service if model is downloaded
+        if (isModelDownloaded) {
+          final llmService = await createLLMService();
+          overrides.add(llmServiceProvider.overrideWithValue(llmService));
+        }
       }
     }
 
     if (mounted) {
       setState(() {
         _isInitialized = isInitialized;
+        _isModelDownloaded = isModelDownloaded;
         _overrides = overrides;
         _isLoading = false;
       });
@@ -110,7 +119,10 @@ class _CryptAILoaderState extends State<CryptAILoader> {
 
     return ProviderScope(
       overrides: _overrides,
-      child: CryptAIApp(isInitialized: _isInitialized),
+      child: CryptAIApp(
+        isInitialized: _isInitialized,
+        isModelDownloaded: _isModelDownloaded,
+      ),
     );
   }
 }

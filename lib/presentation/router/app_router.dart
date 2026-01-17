@@ -2,15 +2,20 @@ import 'package:go_router/go_router.dart';
 import '../screens/onboarding/encryption_setup_screen.dart';
 import '../screens/chat/chat_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/model_download/model_download_screen.dart';
 
 /// Application router configuration
 class AppRouter {
   final bool isInitialized;
+  final bool isModelDownloaded;
 
-  AppRouter({required this.isInitialized});
+  AppRouter({
+    required this.isInitialized,
+    required this.isModelDownloaded,
+  });
 
   late final GoRouter router = GoRouter(
-    initialLocation: isInitialized ? '/' : '/setup',
+    initialLocation: _getInitialLocation(),
     routes: [
       GoRoute(
         path: '/',
@@ -31,10 +36,25 @@ class AppRouter {
         builder: (context, state) => const EncryptionSetupScreen(),
       ),
       GoRoute(
+        path: '/download-model',
+        name: 'download_model',
+        builder: (context, state) => const ModelDownloadScreen(),
+      ),
+      GoRoute(
         path: '/settings',
         name: 'settings',
         builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );
+
+  String _getInitialLocation() {
+    if (!isInitialized) {
+      return '/setup';
+    }
+    if (!isModelDownloaded) {
+      return '/download-model';
+    }
+    return '/';
+  }
 }
