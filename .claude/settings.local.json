@@ -7,7 +7,9 @@
       "Bash(flutter clean:*)",
       "Bash(dart run:*)",
       "Bash(keytool:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(adb uninstall:*)",
+      "Bash(\"%LOCALAPPDATA%\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" uninstall com.wt.cryptai)"
     ]
   }
 }

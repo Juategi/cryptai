@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission for model download -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Microphone permission for speech-to-text -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
